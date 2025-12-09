@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gensyn Quiz Hub - Deep Tech Knowledge Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logo-img {
+            width: 140px;
+            margin-bottom: 15px;
+        }
+
+        .logo-text {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .quiz-section { display: none; }
+        .quiz-section.active { display: block; animation: fadeIn 0.5s ease-in; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-counter {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+
+        .question h3 {
+            color: #333;
+            font-size: 1.3rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .options { display: grid; gap: 12px; }
+
+        .option {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option.correct {
+            border-color: #4CAF50;
+            background: linear-gradient(45deg, rgba(76,175,80,0.1), rgba(76,175,80,0.2));
+        }
+
+        .option.incorrect {
+            border-color: #f44336;
+            background: linear-gradient(45deg, rgba(244,67,54,0.1), rgba(244,67,54,0.2));
+        }
+
+        .feedback {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+        }
+
+        .buttons { text-align: center; margin-top: 30px; }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .results-screen { text-align: center; }
+
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        /* POWERED BY TRIX FOOTER */
+        .footer {
+            margin-top: 35px;
+            text-align: center;
+            font-size: 1rem;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .footer span {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <img src="https://gensyn.ai/logo.svg" alt="Gensyn Logo" class="logo-img">
+        <div class="logo-text">Gensyn Quiz Hub</div>
+        <div class="subtitle">Deep Tech Knowledge Test</div>
+    </div>
+
+    <div id="start-screen" class="quiz-section active">
+        <h2>Welcome!</h2>
+        <p>Test how well you understand decentralized machine learning and verification.</p>
+        <div class="buttons">
+            <button class="btn" onclick="startQuiz()">Start Quiz</button>
+        </div>
+    </div>
+
+    <div id="quiz-screen" class="quiz-section">
+        <div class="question-counter">
+            <span id="current-question">1</span> of <span id="total-questions">10</span>
+        </div>
+
+        <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+
+        <div class="question">
+            <h3 id="question-text"></h3>
+            <div id="options-container" class="options"></div>
+        </div>
+
+        <div id="feedback" class="feedback"></div>
+
+        <div class="buttons">
+            <button class="btn" id="next-btn" onclick="nextQuestion()" disabled>Next Question</button>
+        </div>
+    </div>
+
+    <div id="results-screen" class="quiz-section results-screen">
+        <h2>Quiz Complete!</h2>
+        <div id="score-circle" class="score-circle"><span id="score-percentage">0%</span></div>
+        <div class="buttons">
+            <button class="btn" onclick="restartQuiz()">Take Quiz Again</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        Powered by <span>Trix</span>
+    </div>
+
+</div>
+
+<script>
+    const quizData = [
+        {
+            question: "What is the core verification challenge Gensyn is solving for decentralized model training?",
+            options: [
+                "Ensuring model accuracy without redoing computation",
+                "Preventing compute nodes from going offline",
+                "Automating GPU driver installation",
+                "Reducing bandwidth requirement"
+            ],
+            correct: 0
+        },
+        {
+            question: "How does Gensyn verify that a remote solver actually performed ML computation?",
+            options: [
+                "Checksum hashing of final outputs",
+                "Smart contract challenge verification",
+                "Validator signature markets",
+                "Local result encryption"
+            ],
+            correct: 1
+        },
+        {
+            question: "In Gensyn architecture, what do solvers do?",
+            options: [
+                "Host datasets",
+                "Perform compute tasks and return proofs",
+                "Sell GPU nodes",
+                "Verify proofs manually"
+            ],
+            correct: 1
+        },
+        {
+            question: "Why is trustless verification crucial?",
+            options: [
+                "Solvers might fake results for rewards",
+                "GPU heat issues",
+                "Because training is fully on-chain",
+                "Proofs need centralized review"
+            ],
+            correct: 0
+        },
+        {
+            question: "Gensyn’s closest verification approach?",
+            options: [
+                "Full model reexecution",
+                "Probabilistic gradient spot checks",
+                "Encrypted gradient channels",
+                "Local loss computation only"
+            ],
+            correct: 1
+        },
+        {
+            question: "What incentivizes participants?",
+            options: [
+                "Compute rental tokens",
+                "Payments for verifiable ML work",
+                "VC dividends",
+                "Free GPUs"
+            ],
+            correct: 1
+        },
+        {
+            question: "Why does decentralizing training reduce cost?",
+            options: [
+                "Quantum compression",
+                "Uses surplus global hardware",
+                "No GPU power needed",
+                "Zero checkpoints"
+            ],
+            correct: 1
+        },
+        {
+            question: "How does Gensyn prevent solver collusion?",
+            options: [
+                "Randomizing schema",
+                "Staking plus challenge-verification crypto-economics",
+                "Central authority review",
+                "GPU receipts"
+            ],
+            correct: 1
+        },
+        {
+            question: "Difference from Akash?",
+            options: [
+                "CPU only",
+                "Focus on verifiable deep learning",
+                "Consensus-free network",
+                "No staking allowed"
+            ],
+            correct: 1
+        },
+        {
+            question: "Long-term goal of Gensyn?",
+            options: [
+                "Gaming GPU hosting",
+                "Open access to ML training globally",
+                "Closed private clusters",
+                "Unverified free compute"
+            ],
+            correct: 1
+        }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let selectedOption = -1;
+
+    function startQuiz() {
+        document.getElementById('start-screen').classList.remove('active');
+        document.getElementById('quiz-screen').classList.add('active');
+        document.getElementById('total-questions').textContent = quizData.length;
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        if(currentQuestion >= quizData.length) return showResults();
+
+        const q = quizData[currentQuestion];
+        document.getElementById('current-question').textContent = currentQuestion + 1;
+        document.getElementById('question-text').textContent = q.question;
+
+        const options = document.getElementById('options-container');
+        options.innerHTML = "";
+        q.options.forEach((text, idx) => {
+            const div = document.createElement("div");
+            div.className = "option";
+            div.textContent = text;
+            div.onclick = () => selectOption(idx);
+            options.appendChild(div);
+        });
+
+        document.getElementById('progress-fill').style.width =
+            (currentQuestion / quizData.length) * 100 + "%";
+
+        selectedOption = -1;
+        document.getElementById('feedback').style.display = 'none';
+        document.getElementById('next-btn').disabled = true;
+    }
+
+    function selectOption(idx) {
+        if(selectedOption !== -1) return;
+
+        selectedOption = idx;
+        const q = quizData[currentQuestion];
+        const opts = document.querySelectorAll('.option');
+
+        opts.forEach((o, i) => {
+            if(i === q.correct) o.classList.add('correct');
+            else if(i === idx) o.classList.add('incorrect');
+            o.style.pointerEvents = "none";
+        });
+
+        if(idx === q.correct) score++;
+
+        document.getElementById('feedback').style.display = 'block';
+        document.getElementById('next-btn').disabled = false;
+    }
+
+    function nextQuestion() {
+        currentQuestion++;
+        loadQuestion();
+    }
+
+    function showResults() {
+        document.getElementById('quiz-screen').classList.remove('active');
+        document.getElementById('results-screen').classList.add('active');
+
+        const pct = Math.round((score / quizData.length) * 100);
+        document.getElementById('score-percentage').textContent = pct + "%";
+    }
+
+    function restartQuiz() {
+        currentQuestion = 0;
+        score = 0;
+        document.getElementById('results-screen').classList.remove('active');
+        document.getElementById('start-screen').classList.add('active');
+    }
+</script>
+
+</body>
+</html>
